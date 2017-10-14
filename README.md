@@ -29,3 +29,5 @@ The time and temperature will be displayed on the [2.2" 18bit color TFT LCD Disp
 
 ## OS Setup
 First you'll need to install supervisor and then create an applciation that monitors the ```alarm.py```.
+
+About font sizes [here](http://www.geeks3d.com/20100930/tutorial-first-steps-with-pil-python-imaging-library/#p06)
