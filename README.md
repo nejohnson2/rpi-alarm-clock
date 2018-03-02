@@ -27,6 +27,21 @@ DIN   - BCM 21 (pin 40)
 ## Display Hardware
 The time and temperature will be displayed on the [2.2" 18bit color TFT LCD Display](https://www.adafruit.com/product/1480).  The display is controled over SPI and will need three jumpers to be soldered in order to be in SPI mode permanately.  See [this page](https://learn.adafruit.com/user-space-spi-tft-python-library-ili9341-2-8/wiring) for making the connection to the RPi.
 
+```
+Display - RPi
+-----------
+Vin     - 5V
+GND     - GND
+BL      - None
+SCK     - BCM 11 (pin 23)
+MISO    - None
+MOSI    - BCM 10 (pin 19)
+CS      - BCM 08 (pin 24)
+SDCS    - None
+RST     - BCM 23 (pin 16)
+D/C     - BCM 18 (pin 12)
+```
+
 ## OS Setup
 First you'll need to install supervisor and then create an applciation that monitors the ```alarm.py```.
 
