@@ -15,8 +15,7 @@ LRCLK - BCM 19 (pin 35)
 DIN   - BCM 21 (pin 40)
 ```
 
-#### Rpi I2S Software Setup
-The setup is based on [Adafruit's Tutorial](https://learn.adafruit.com/adafruit-max98357-i2s-class-d-mono-amp/raspberry-pi-usage).  I'm starting with a fresh Raspian Image
+I followed [Adafruit's Tutorial](https://learn.adafruit.com/adafruit-max98357-i2s-class-d-mono-amp/raspberry-pi-usage) to configure the software.  I'm starting with a fresh Raspian Image and followed both the standard setup, the 'reduce popping' section and the software audio control section.  Everything worked immediately.
 
 ### ILI9341 Display
 The time and temperature will be displayed on the [2.2" 18bit color TFT LCD Display](https://www.adafruit.com/product/1480).  The display is controled over SPI and will need three jumpers to be soldered in order to be in SPI mode permanately.  See [this page](https://learn.adafruit.com/user-space-spi-tft-python-library-ili9341-2-8/wiring) for making the connection to the RPi.
