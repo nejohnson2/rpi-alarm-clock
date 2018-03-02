@@ -36,6 +36,32 @@ D/C     - BCM 18 (pin 12)
 ```
 
 ## Software Overview
+First install required software: 
+
+```
+# install dependencies
+sudo apt-get update
+sudo apt-get install -y build-essential git python-dev python-setuptools python-pip python-smbus python-imaging python-numpy
+sudo apt-get install -y vlc
+
+# install ILI9341 Python Library
+git clone https://github.com/adafruit/Adafruit_Python_ILI9341.git
+cd Adafruit_Python_ILI9341/
+sudo python setup.py install
+cd ../
+sudo rm -rf Adafruit_Python_ILI9341/
+
+# install python libraries
+sudo pip install tornado 
+sudo pip install crontab
+sudo pip install npr
+
+# Install Radio software
+git clone https://github.com/nejohnson2/rpi-alarm-clock.git
+cd rpi-alarm-clock/
+
+```
+
 First you'll need to install supervisor and then create an applciation that monitors the ```alarm.py```.
 
 About font sizes [here](http://www.geeks3d.com/20100930/tutorial-first-steps-with-pil-python-imaging-library/#p06)
