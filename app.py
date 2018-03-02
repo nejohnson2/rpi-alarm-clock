@@ -1,6 +1,15 @@
 import os, sys, time
+import json
 import requests
+import threading
+import multiprocessing as mp
+from tornado import gen
 from tornado import websocket, web, ioloop	
+from tornado.httpclient import AsyncHTTPClient
+from tornado.ioloop import PeriodicCallback
+
+from clock import Clock
+from scheduler import Scheduler
 
 # Weather Underground API
 apikey = '1473eef1c8584998'
@@ -8,119 +17,64 @@ features = ['conditions','astronomy']
 pws_id = 'KNYASTOR5'
 weather_url = 'http://api.wunderground.com/api/{}/{}/q/pws:{}.json'
 
-def fetch_weather():
-	current = time.strftime("%H:%M:%S")
-
-	# Get the current conditions
-	r = requests.get(weather_url.format(apikey, features[0], pws_id))
-	temp = r.json()['current_observation']['temp_c']
-	rh = r.json()['current_observation']['relative_humidity']
-	
-	# get sunset/sunrise times
-	r = requests.get(weather_url.format(apikey, features[1], pws_id))	
-	sunset = r.json()['moon_phase']['sunset']
-	sunrise = r.json()['moon_phase']['sunrise']
-
-	print "Current Time: {}".format(current)
-	print "Current Conditions: {} - {}".format(temp, rh)
-	print "Sunrise: {} - Sunset: {}".format(sunrise, sunset)
-
-class Radio(object):
-	'''Audio from Radio'''
-	def __init__(self, station):
-		self.status = 'running'
-		self.station = station
-
-		self._exec_command("service mpd start")
-		self._exec_command("mpc clear")
-
-		stream = self._fetch_stream(station)
-
-		print "Playing stream: {}".format(stream)
-		self._exec_command("mpc add {}".format(stream))		
-
-	def play(self):
-		'''Start Playing station'''
-		self.status = 'playing'
-		self._exec_command("mpc play")
-
-	def stop(self):
-		''' Stop playing the station'''
-		self._exec_command("mpc stop")
-		self.status = 'running'
-
-	def _exec_command(self, cmd):
-		result = ""
-		p = os.popen(cmd)
-		for line in p.readline().split('\n'):
-			result = result + line
-		
-		return result	
-
-	def _fetch_stream(self, url):
-		#what we're looking for
-		search='File1='
-		r = requests.get(url)
-		if r.status_code == 200:
-			print r.text
-			for line in r.text.splitlines():
-				if search in line:
-					return line.lstrip(search)	
-
 class IndexHandler(web.RequestHandler):
 	'''Handle requests on / '''
 	def get(self):
-		self.render("index.html")
+		alarm = self.settings['alarm']
+		alarms = alarm.get_current_alarms()
 
-class PlayHandler(web.RequestHandler):
-	'''Handle requests on / '''
-	@web.asynchronous
-	def get(self):
-		r = self.settings['radio']
-		r.play()
-		time.sleep(5)
-		r.stop()
-		self.finish()
-		
+		if alarms:
+			self.render("index.html", alarm=alarms[0])
+		else:
+			self.render("index.html")
+
+class SetAlarmHandler(web.RequestHandler):
+	def post(self):
+		time = self.get_argument("time", "")
+		hour, minute = time.split(':')
+		print "Alarm set to : " + time
+
+		alarm = self.settings['alarm']
+		alarm.schedule_alarm(hour, minute)
+
+		self.redirect('/')
+
+
 class WeatherHandler(web.RequestHandler):
-	@web.asynchronous
+	@gen.coroutine
 	def get(self):
-		current = time.strftime("%H:%M:%S")
+		# current = time.strftime("%H:%M:%S")		
+		url = [weather_url.format(apikey, features[0], pws_id), 
+				weather_url.format(apikey, features[1], pws_id)]
 
-		# Get the current conditions
-		r = requests.get(weather_url.format(apikey, features[0], pws_id))
-		temp = r.json()['current_observation']['temp_c']
-		rh = r.json()['current_observation']['relative_humidity']
+		weather, astronomy = yield [self.fetch_weather(url[0]), self.fetch_weather(url[1])]
+		print weather['current_observation']['temp_c']
+		print astronomy['moon_phase']['sunrise']
+		print astronomy['moon_phase']['sunset']
 		
-		# get sunset/sunrise times
-		r = requests.get(weather_url.format(apikey, features[1], pws_id))	
-		sunset = r.json()['moon_phase']['sunset']
-		sunrise = r.json()['moon_phase']['sunrise']
+	@gen.coroutine
+	def fetch_weather(self, url):
+		http_client = AsyncHTTPClient()
+		response = yield http_client.fetch(url)
+		raise gen.Return(json.loads(response.body))
 
-		print "Current Time: {}".format(current)
-		print "Current Conditions: {} - {}".format(temp, rh)
-		print "Sunrise: {} - Sunset: {}".format(sunrise, sunset)
-		self.finish()
-		
+
 def main():
-	stations = {
-		'WNYC'      : 'http://www.wnyc.org/stream/wnyc-fm939/aac.pls',
-	}	
-
-	radio = Radio(stations['WNYC'])
-	print "Status: {}".format(radio.status)
+	# -- Launch the clock in a seperate process
+	clock = Clock()
+	clock.start()
 
 	settings = {
 		"template_path": os.path.join(os.path.dirname(__file__), "templates"),
 		"static_path": os.path.join(os.path.dirname(__file__), "static"),
-		"radio" : radio,
-		"debug" : True
+		"debug" : True,
+		"alarm" : Scheduler()
 	}
-
+	
 	app = web.Application(
 		[
 			(r'/', IndexHandler),
-			(r'/play', PlayHandler),
+			(r'/set_alarm', SetAlarmHandler),
 			(r'/weather', WeatherHandler),
 		], **settings
 	)
