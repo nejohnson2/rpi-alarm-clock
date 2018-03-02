@@ -53,6 +53,7 @@ sudo rm -rf Adafruit_Python_ILI9341/
 
 # install python libraries
 sudo pip install tornado 
+sudo pip install python-vlc
 sudo pip install crontab
 sudo pip install npr
 
