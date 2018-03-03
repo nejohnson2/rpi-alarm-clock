@@ -36,7 +36,7 @@ D/C     - BCM 18 (pin 12)
 ```
 
 ## Software Overview
-First install required software: 
+Run ```sudo raspi-config``` to perform some basic setup.  Make sure to turn on ```spi```.  Then install required software: 
 
 ```
 # install dependencies
@@ -54,7 +54,7 @@ sudo rm -rf Adafruit_Python_ILI9341/
 # install python libraries
 sudo pip install tornado 
 sudo pip install python-vlc
-sudo pip install crontab
+sudo pip install python-crontab
 sudo pip install npr
 
 # Install Radio software
