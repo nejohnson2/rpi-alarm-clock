@@ -13,7 +13,7 @@ class Scheduler(object):
 		# -- Create new job
 		current_dir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 		
-		job = self.cron.new(command='python '+current_dir+'/zenith/npr_radio.py', comment="alarm")
+		job = self.cron.new(command='python '+current_dir+'/npr_radio.py', comment="alarm")
 
 		# -- Finally, add the new job to the crontab
 		job.minute.on(minute)

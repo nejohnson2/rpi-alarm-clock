@@ -14,21 +14,16 @@ class NPRadio():
 
 	def initialize(self):
 		try:
-			# npr.login()
-			station = npr.Station('WNYC')
-			url = station.live()
+			station = npr.Station(554)
 		except Exception as e:
 			print 'Unable to get NPR'
 			print e
 
 		try:
-			instance = vlc.Instance()
-			self.player = instance.media_player_new()
-			media = instance.media_new(url)
+			self.player = vlc.MediaPlayer(station.stream)
 
-			self.player.set_media(media)
 		except Exception as e:
-			print 'Failed to launch VLC player'
+			print 'Failed to setup VLC player'
 			print e
 
 

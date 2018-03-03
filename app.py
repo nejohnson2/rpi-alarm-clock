@@ -26,7 +26,7 @@ class IndexHandler(web.RequestHandler):
 		if alarms:
 			self.render("index.html", alarm=alarms[0])
 		else:
-			self.render("index.html")
+			self.render("index.html", alarm='None')
 
 class SetAlarmHandler(web.RequestHandler):
 	def post(self):
