@@ -30,5 +30,5 @@ class NPRadio():
 if __name__ == '__main__':
 	player = NPRadio()
 	player.play()
-	time.sleep(10)
+	time.sleep(30)
 	player.stop()

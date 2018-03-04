@@ -9,7 +9,11 @@ from tornado.httpclient import AsyncHTTPClient
 from tornado.ioloop import PeriodicCallback
 
 from clock import Clock
+from controller import Controller
 from scheduler import Scheduler
+
+# -- For Websockets
+cl = []
 
 # Weather Underground API
 apikey = '1473eef1c8584998'
@@ -20,24 +24,7 @@ weather_url = 'http://api.wunderground.com/api/{}/{}/q/pws:{}.json'
 class IndexHandler(web.RequestHandler):
 	'''Handle requests on / '''
 	def get(self):
-		alarm = self.settings['alarm']
-		alarms = alarm.get_current_alarms()
-
-		if alarms:
-			self.render("index.html", alarm=alarms[0])
-		else:
-			self.render("index.html", alarm='None')
-
-class SetAlarmHandler(web.RequestHandler):
-	def post(self):
-		time = self.get_argument("time", "")
-		hour, minute = time.split(':')
-		print "Alarm set to : " + time
-
-		alarm = self.settings['alarm']
-		alarm.schedule_alarm(hour, minute)
-
-		self.redirect('/')
+		self.render("index.html")
 
 
 class WeatherHandler(web.RequestHandler):
@@ -58,6 +45,48 @@ class WeatherHandler(web.RequestHandler):
 		response = yield http_client.fetch(url)
 		raise gen.Return(json.loads(response.body))
 
+class WebSocketHandler(websocket.WebSocketHandler):
+	def check_origin(self, origin):
+		return True
+
+	def open(self):
+		'''Send current values once a 
+		socket has been opened'''
+		alarm = self.settings['alarm']
+		controller = self.settings['controller']
+
+		alarms = alarm.get_current_alarms()
+		vol = controller.get_volume()
+		message={'alarm':alarms[0], 'volume':vol[0]}
+
+		if self not in cl:
+			cl.append(self)
+
+		self.write_message(message)
+
+	def on_close(self):
+		if self in cl:
+			cl.remove(self)
+
+	def on_message(self, message):
+		'''Set alarm clock parameters
+		when recieved from client'''
+		print "Client received message: %s" %(message)
+		message = json.loads(message)
+		
+		if message['type'] == 'alarm':
+			hour, minute = message['value'].split(':')
+			print "Alarm set to : " + message['value']
+
+			# -- Get alarm object
+			alarm = self.settings['alarm']
+			alarm.schedule_alarm(hour, minute)
+
+		elif message['type'] == 'volume':
+			# -- Get controller object
+			controller = self.settings['controller']
+			controller.set_volume(int(message['value']))
+
 
 def main():
 	# -- Launch the clock in a seperate process
@@ -68,13 +97,14 @@ def main():
 		"template_path": os.path.join(os.path.dirname(__file__), "templates"),
 		"static_path": os.path.join(os.path.dirname(__file__), "static"),
 		"debug" : True,
-		"alarm" : Scheduler()
+		"alarm" : Scheduler(),
+		"controller" : Controller(),
 	}
 	
 	app = web.Application(
 		[
 			(r'/', IndexHandler),
-			(r'/set_alarm', SetAlarmHandler),
+			(r'/ws', WebSocketHandler),
 			(r'/weather', WeatherHandler),
 		], **settings
 	)

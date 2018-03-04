@@ -2,15 +2,31 @@
 
 {% block body %}
 <div class="container">
-        <form class="form-signin" action="/set_alarm" method="post" id="login_form">
-            <h2 class="form-signin-heading">Set Alarm Time</h2>
 
-            <input type="text" class="form-control" id="time" name="time" placeholder="HH:MM" required autofocus>
-            <br>
-            <button class="btn btn-lg btn-primary btn-block" type="submit">Schedule</button>
-            <br>
-            <h3> Current Alarm: {{ alarm }}</h3>
-        </form>
-    </div>
+
+     <form class="form-signin" id="login_form">
+        <h2 class="form-signin-heading">Set Alarm</h2>
+
+        <input type="text" class="form-control" id="time" name="time" placeholder="HH:MM" required autofocus>
+        <br>
+        <button class="btn btn-lg btn-primary btn-block" id="setAlarm" >Schedule</button>
+        <br>
+        <div id="currentAlarm"></div>
+        <hr>
+    </form>
+
+    <div class="slider">
+
+	    <p>
+		  <label for="amount">Volume:</label>
+		  <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
+		</p> 
+		<div id="slider-vertical" style="height:20px;"></div>
+	</div>
+    
 </div>
+{% end %}
+
+{% block endScripts %}
+<script src="{{ static_url("js/main.js") }}"></script>
 {% end %}
