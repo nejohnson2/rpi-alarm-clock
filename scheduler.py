@@ -10,6 +10,7 @@ class Scheduler(object):
 
 		# -- Remove any existing alarms
 		self.cron.remove_all(comment="alarm")
+		
 		# -- Create new job
 		current_dir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 		
