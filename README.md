@@ -56,6 +56,7 @@ sudo pip install tornado
 sudo pip install python-vlc
 sudo pip install python-crontab
 sudo pip install npr
+sudo pip install supervisor
 
 # Install Radio software
 git clone https://github.com/nejohnson2/rpi-alarm-clock.git
@@ -63,7 +64,17 @@ cd rpi-alarm-clock/
 
 ```
 
-First you'll need to install supervisor and then create an applciation that monitors the ```alarm.py```.
+In order to auto boot at startup:
+```
+# Autolaunch supervisord first
+sudo cp /home/pi/rpi-alarm-clock/supervisord /etc/init.d/supervisord
+sudo chmod +x /etc/init.d/supervisord
+sudo update-rc.d supervisord defaults
+
+# Add conf file for the app
+sudo mkdir /etc/supervisor
+sudo cp /home/pi/rpi-alarm-clock/supervisord.conf /etc/supervisor/supervisord.conf 
+```
 
 About font sizes [here](http://www.geeks3d.com/20100930/tutorial-first-steps-with-pil-python-imaging-library/#p06)
 
