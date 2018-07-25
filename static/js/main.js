@@ -23,6 +23,12 @@ $(function(){
         ws.send(data);
     });
 
+    /* Send new alarm time */
+    $("#clear-alarm").click(function(){
+        var data = JSON.stringify({type:"clear"});
+        ws.send(data);
+    });    
+
     /* Volume Slider */
     $( "#slider-vertical" ).slider({
         orientation: "horizontal",
@@ -43,4 +49,8 @@ $(function(){
         console.log(volume);
         ws.send(data);
     });
+    $( "#offButton" ).mouseup(function() {
+        var data = JSON.stringify({type:"off"});
+        ws.send(data)
+    })
 });

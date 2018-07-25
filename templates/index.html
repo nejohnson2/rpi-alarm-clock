@@ -11,18 +11,27 @@
         <br>
         <button class="btn btn-lg btn-primary btn-block" id="setAlarm" >Schedule</button>
         <br>
-        <div id="currentAlarm"></div>
-        <hr>
     </form>
 
-    <div class="slider">
+    <div class="clearAlarm">
+        <div id="currentAlarm"></div>
+        <button class="btn btn-sm btn-secondary btn-block" id="clear-alarm">Clear Alarm</button>
+        <hr>
+    </div>
 
+    <div class="slider">
+        
 	    <p>
 		  <label for="amount">Volume:</label>
 		  <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
 		</p> 
 		<div id="slider-vertical" style="height:20px;"></div>
+        <br>
+        <br>
+        <hr>
+        <button class="btn btn-lg btn-danger btn-block" id="offButton">Off</button>
 	</div>
+
     
 </div>
 {% end %}

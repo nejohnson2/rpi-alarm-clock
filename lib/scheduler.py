@@ -1,5 +1,6 @@
 import os
 import datetime
+import logging
 from crontab import CronTab
 
 class Scheduler(object):
@@ -33,3 +34,9 @@ class Scheduler(object):
 			alarms.append("%s:%s" % (str(job.hour).zfill(2), str(job.minute).zfill(2)))
 
 		return alarms
+
+	def clear_alarm(self):
+		logging.warning('clear_alarm')
+		# -- Remove any existing alarms
+		self.cron.remove_all(comment="alarm")
+		self.cron.write()

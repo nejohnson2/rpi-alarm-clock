@@ -1,16 +1,14 @@
-import os, sys, time
+import os
+import time
 import json
 import requests
-import threading
-import multiprocessing as mp
+import logging
+import subprocess
 from tornado import gen
 from tornado import websocket, web, ioloop	
 from tornado.httpclient import AsyncHTTPClient
-from tornado.ioloop import PeriodicCallback
 
-from clock import Clock
-from controller import Controller
-from scheduler import Scheduler
+from lib import Clock, Controller, Scheduler
 
 # -- For Websockets
 cl = []
@@ -55,10 +53,16 @@ class WebSocketHandler(websocket.WebSocketHandler):
 		alarm = self.settings['alarm']
 		controller = self.settings['controller']
 
+		# -- get any current states
 		alarms = alarm.get_current_alarms()
 		vol = controller.get_volume()
-		message={'alarm':alarms[0], 'volume':vol[0]}
+		
+		if alarms:
+			message={'alarm':alarms[0], 'volume':vol[0]}
+		else:
+			message={'alarm':'None', 'volume':vol[0]}
 
+		# -- get clients
 		if self not in cl:
 			cl.append(self)
 
@@ -74,6 +78,7 @@ class WebSocketHandler(websocket.WebSocketHandler):
 		print "Client received message: %s" %(message)
 		message = json.loads(message)
 		
+		# -- Schedule new alarm
 		if message['type'] == 'alarm':
 			hour, minute = message['value'].split(':')
 			print "Alarm set to : " + message['value']
@@ -82,16 +87,47 @@ class WebSocketHandler(websocket.WebSocketHandler):
 			alarm = self.settings['alarm']
 			alarm.schedule_alarm(hour, minute)
 
+		# -- Set new volume
 		elif message['type'] == 'volume':
 			# -- Get controller object
 			controller = self.settings['controller']
 			controller.set_volume(int(message['value']))
 
+		# -- turn off an live radio stream
+		elif message['type'] == 'off':
+			try:
+				# -- get radio process
+				cmd = 'ps ax | grep npr_radio | awk \'{if ($5 == \"python\") print $1}\''
+				pid = subprocess.check_output(cmd, shell=True)
+
+				# -- kill process
+				subprocess.call('sudo kill {}'.format(pid), shell=True)
+			except:
+				pass
+				
+		# -- Remove any existing alarms
+		elif message['type'] == 'clear':
+			# -- get objects
+			alarm = self.settings['alarm']
+			controller = self.settings['controller']
+			
+			# -- clear an alarm
+			alarm.clear_alarm()
+			vol = controller.get_volume()
+			
+			# -- send new data to user
+			message={'alarm':'None', 'volume':vol[0]}
+
+			if self not in cl:
+				cl.append(self)
+
+			self.write_message(message)			
+
 
 def main():
 	# -- Launch the clock in a seperate process
-	clock = Clock()
-	clock.start()
+	# clock = Clock()
+	# clock.start()
 
 	settings = {
 		"template_path": os.path.join(os.path.dirname(__file__), "templates"),

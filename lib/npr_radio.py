@@ -30,7 +30,7 @@ class NPRadio():
 			station = npr.Station(554)
 		except Exception as e:
 			print 'Unable to get NPR'
-			print e
+			raise
 
 		try:
 			self.player = vlc.MediaPlayer(station.stream)
