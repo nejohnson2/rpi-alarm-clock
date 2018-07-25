@@ -1,12 +1,12 @@
 '''This is a module that controls
-various parameters of the clock
-radio'''
+various parameters of the radio'''
 
 import alsaaudio
 
 class Controller(object):
 	def __init__(self):
 		self.mixer = alsaaudio.Mixer('PCM')
+		self.set_volume(71)
 
 	def set_volume(self, volume):
 		self.mixer.setvolume(volume)
