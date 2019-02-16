@@ -88,3 +88,25 @@ station = npr.Station('WNYC')
 station.live()
 ```
 The ```station.live()``` command will return a live stream link.  I should be able to then send this into another application on the RPi.
+
+### Static IP on Rpi
+This information was obtained from [this stack overflow discussion](https://raspberrypi.stackexchange.com/questions/37920/how-do-i-set-up-networking-wifi-static-ip-address/74428#74428)
+
+First you need to get the **default gateway IP** address of your router.  This is usually something like 192.168.0.1.  You then need to get the IP address of your **domain name server** (DNS server).  View the routing table with ```route -ne``` or the default gateway with:
+
+```
+# view the routing table to obtain default gateway IP
+$ ip route | grep default | awk '{print $3}'
+
+# view DNS server IP information information
+$ cat /etc/resolv.conf
+```
+Finally, edit the ```/etc/dhcpcd.conf``` file by adding:
+
+```
+interface wlan0
+static ip_address=<rpi_ip_address>
+static routers=<default_gateway_ip>
+static domain_name_servers=<server_1> <server_2>
+```
+Then reboot!
